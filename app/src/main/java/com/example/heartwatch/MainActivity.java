@@ -3,6 +3,7 @@ package com.example.heartwatch;
 import static com.example.heartwatch.NotificationActionReceiver.ACTION_I_AM_OKAY;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.Manifest;
@@ -24,6 +25,7 @@ import android.location.LocationManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -53,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public static final String NOTIFICATION_CHANNEL_ID = "YOUR_CHANNEL_ID";
     private static final int PERMISSIONS_REQUEST_LOCATION = 123;
-
+    private static  final int REQUEST_BLUETOOTH_SCAN_PERMISSION = 1;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothDevice smartWatchDevice;
     private BluetoothSocket bluetoothSocket;
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public static final String ACTION_I_NEED_HELP = "com.example.app.ACTION_I_NEED_HELP";
 
     public static final int MSG_HEART_RATE = 1;
-    private static final int NOTIFICATION_ID = 1;
+    static final int NOTIFICATION_ID = 1;
 
 
     static final int PERMISSIONS_REQUEST_SMS = 123;
@@ -282,17 +284,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_LOCATION:
+
+                if(requestCode==PERMISSIONS_REQUEST_LOCATION){
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
                 } else {
                     Toast.makeText(this, "Location permission is required to use this app", Toast.LENGTH_SHORT).show();
                 }
-                break;
-            default:
+
+                if (requestCode == REQUEST_BLUETOOTH_SCAN_PERMISSION) {
+                        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                            // Permission granted, start discovery
+                            bluetoothAdapter.startDiscovery();
+                        } else {
+                            // Permission denied, show a message to the user
+                            Toast.makeText(this, "Bluetooth scan permission denied", Toast.LENGTH_SHORT).show();
+                        }
+                }
+
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+
     }
 
     private void sendSMS(String phoneNumber, String message) {
@@ -306,6 +318,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void showNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+                    "Heart rate alerts", NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String emergencyContactName = sharedPreferences.getString(SettingsActivity.KEY_EMERGENCY_CONTACT_NAME, "");
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)

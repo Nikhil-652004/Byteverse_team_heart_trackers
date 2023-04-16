@@ -1,12 +1,17 @@
 package com.example.heartwatch;
 
+import static com.example.heartwatch.MainActivity.NOTIFICATION_CHANNEL_ID;
 import static com.example.heartwatch.MainActivity.PERMISSIONS_REQUEST_SMS;
 
+import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -18,12 +23,13 @@ public class NotificationTimerReceiver extends BroadcastReceiver {
     private static final String TAG = "NotificationTimerReceiver";
     private static final int NOTIFICATION_ID = 1;
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive: Notification timer expired");
 
         // Create notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, MainActivity.NOTIFICATION_CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_heart)
                 .setContentTitle("Heart rate monitoring")
                 .setContentText("Click to open app and stop monitoring")
@@ -37,9 +43,6 @@ public class NotificationTimerReceiver extends BroadcastReceiver {
 
         // Show notification
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-
-
-
         notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
