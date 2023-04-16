@@ -19,5 +19,5 @@ Instructions:
 ->If the user clicks "i need help" or doesnt respond to SMS upon 2 minutes,then a emergency sms will be deployed to emergency contact provided with location info
 
 Uses:
-This app will contribute in deaths related to heart attacks which done due to lack of required supervising.
+This app will contribute in minimizing deaths related to heart attacks which done due to lack of required supervising and emergency services
 
